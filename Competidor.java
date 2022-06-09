@@ -32,7 +32,7 @@ public abstract class Competidor implements Comparable<Competidor> {
 
 	public int lucharPorCaracteristica(Competidor competidor, Caracteristica c) {
 		int aux = c.ordinal();
-		for (int i = 0; i<caracteristica.values().length(); i++,aux++) {
+		for (int i = 0; i<Caracteristica.values().length; i++,aux++) {
 			int compare = this.caracteristicaAValor.get(list[aux]).compareTo(competidor.caracteristicaAValor.get(list[aux]));
 			if (compare != 0)
 				return compare;
