@@ -21,18 +21,20 @@ public class Liga extends Competidor {
 		}
 		return false;
 	}
+	
 
 	private void recalcularDatos() {
-		for (Map.Entry<Caracteristica, Integer> entry : caracteristicasToInt.entrySet()) {
-			caracteristicasToInt.replace(entry.getKey(), this.getPromedioCaracteristica(entry.getKey()));
+		for (Map.Entry<Caracteristica, Integer> entry : caracteristicaAValor.entrySet()) {
+			caracteristicaAValor.replace(entry.getKey(), this.getPromedioCaracteristica(entry.getKey()));
 		}
 	}
 
 	private int getPromedioCaracteristica(Caracteristica c) {
 		int totalCaracteristicas = 0;
 		for (Competidor competidor : competidoresDeLaLiga) {
-			totalCaracteristicas += competidor.caracteristicasToInt.get(c);
+			totalCaracteristicas += competidor.caracteristicaAValor.get(c);
 		}
 		return totalCaracteristicas / competidoresDeLaLiga.size();
 	}
+	
 }

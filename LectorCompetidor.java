@@ -12,8 +12,8 @@ import java.util.List;
 public class LectorCompetidor {
 	//Para el lector de liga la idea es crear la liga con su nombre y tipo y despues pasarle los personajes de la lista de este main.
 
-	public static List<Competidor> main(String fileName) throws FileNotFoundException,NumberFormatException,MismoBandoException {
-		ArrayList<Competidor> aux = new ArrayList<Competidor>();
+	public static List<Personaje> main(String fileName) throws FileNotFoundException,NumberFormatException,MismoBandoException {
+		ArrayList<Personaje> aux = new ArrayList<Personaje>();
 		try {
 			
 			FileReader archivo = new FileReader(fileName);
@@ -24,11 +24,12 @@ public class LectorCompetidor {
 			while (line != null) {
 
 				datos = line.split(",");
+				boolean esHeroe = true;
 				if (datos[0].equals("Heroe"))
-					aux.add(new Personaje(datos[1], datos[2],true, Integer.parseInt(datos[3]), Integer.parseInt(datos[4]),
-							Integer.parseInt(datos[5]), Integer.parseInt(datos[6])));
+					esHeroe = true;
 				if (datos[0].equals("Villano"))
-					aux.add(new Personaje(datos[1], datos[2],false, Integer.parseInt(datos[3]), Integer.parseInt(datos[4]),
+					esHeroe = false;
+					aux.add(new Personaje(datos[1], datos[2],esHeroe, Integer.parseInt(datos[3]), Integer.parseInt(datos[4]),
 							Integer.parseInt(datos[5]), Integer.parseInt(datos[6])));
 				line = lector.readLine();
 
