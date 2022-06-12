@@ -1,18 +1,14 @@
 package Tp3;
 
-
 public class Personaje extends Competidor {
 	
-	String nombrePersonaje;
+	String nombreReal;
 
 	public Personaje(String nombreReal, String nombrePersonaje, boolean esSuperHeroe, int velocidad, int fuerza, int resistencia, int destreza) {
 		super(nombrePersonaje, esSuperHeroe, velocidad, fuerza, resistencia, destreza);
-		this.nombrePersonaje = nombrePersonaje;
+		this.nombreReal = nombreReal;
 	}
 	public String getNombrePersonaje() {
-		return nombrePersonaje;
-	}
-
-
-	
+		return nombreReal;
+	}	
 }
