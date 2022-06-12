@@ -11,9 +11,9 @@ public class Liga extends Competidor {
 		super(nombre, formadaPorSuperHeroes, 0, 0, 0, 0);
 	}
 
-	public boolean agregarCompetidor(Competidor competidor) throws MismoBandoException {
+	public boolean agregarCompetidor(Competidor competidor) throws PeleaAliadaException {
 		if (this.esSuperHeroe == competidor.esSuperHeroe) {
-			throw new MismoBandoException("Dos personajes del mismo bando no pueden pelear");
+			throw new PeleaAliadaException("Dos personajes de distintos bandos no pueden estar juntos");
 		}
 		if (competidoresDeLaLiga.add(competidor)) {
 			this.recalcularDatos();
@@ -38,3 +38,4 @@ public class Liga extends Competidor {
 	}
 	
 }
+

@@ -9,6 +9,6 @@ class PersonajeTest {
 	@Test
 	void getNombrePersonajeTest() {
 		Personaje alan = new Personaje("Alan", "Iz_Exiled", true, 10, 15, 5, 1);
-		assertEquals("Alan", alan.getNombrePersonaje());
+		assertEquals("Alan", alan.getNombreReal());
 	}
 }
