@@ -9,8 +9,9 @@ import java.util.List;
 
 public class LectorLiga {
     // la lista de competidores per viene del LectorCompetidor
-    public static List<Liga> main(String fileName, List<Competidor> per) throws PeleaAliadaException {
-        ArrayList<Liga> aux = new ArrayList<Liga>();
+    public static List<Liga> leerLiga(String fileName, List<Competidor> competidoresDisponibles) throws PeleaAliadaException, BandoErroneoException {
+        ArrayList<Liga> ligaResultado = new ArrayList<Liga>();
+
         try {
             FileReader archivo = new FileReader(fileName);
             BufferedReader lector = new BufferedReader(archivo);
@@ -19,14 +20,23 @@ public class LectorLiga {
 
             while (line != null) {
                 datos = line.split(",");
-                Liga liga = new Liga(datos[0], per.get(0).getBando());
-                for (int i = 1; i < datos.length; i++) {
-                    for (Competidor comp : per) {
-                        if (comp.getNombre() == datos[i])
-                            liga.agregarCompetidor(comp);
+                boolean esHeroe = false;
+
+                for (Competidor comp : competidoresDisponibles) {
+                    if (comp.getNombre().trim().equals(datos[1].trim())) {
+                        esHeroe = comp.esHeroe();
                     }
                 }
-                aux.add(liga);
+                Liga liga = new Liga(datos[0], esHeroe);
+                for (int i = 1; i < datos.length; i++) {
+                    for (Competidor comp : competidoresDisponibles) {
+                        if (comp.getNombre().trim().equals(datos[i].trim())) {
+                            liga.agregarCompetidor(comp);
+                        }
+                    }
+                }
+                competidoresDisponibles.add(liga);
+                ligaResultado.add(liga);
                 line = lector.readLine();
             }
             lector.close();
@@ -35,12 +45,9 @@ public class LectorLiga {
             System.out.println("No se encontro el archivo " + fileName + ". " + e);
         } catch (NumberFormatException e1) {
             System.out.println("Se han introducido caracteres no numericos. " + e1);
-        } catch (PeleaAliadaException e2) {
-
         } catch (IOException e3) {
             e3.printStackTrace();
         }
-        return aux;
+        return ligaResultado;
     }
-
 }

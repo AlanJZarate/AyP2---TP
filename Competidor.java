@@ -8,7 +8,7 @@ public abstract class Competidor implements Comparable<Competidor> {
 	private ComparatorCompetidor comparator = new ComparatorCompetidor();
 	private String nombre;
 	// Boolean para determinar si es superHeroe o Villano
-	protected boolean esSuperHeroe;
+	private boolean esSuperHeroe;
 	// Mapa que guarda Caracteristica, Valor numerico de la caracteristica
 	protected Map<Caracteristica, Integer> caracteristicaAValor = new HashMap<Caracteristica, Integer>();
 
@@ -31,7 +31,7 @@ public abstract class Competidor implements Comparable<Competidor> {
 		return comparator.compare(this, competidor, c);
 	}
 	
-	public boolean getBando(){
+	public boolean esHeroe(){
 		return this.esSuperHeroe;
 	}
 	
