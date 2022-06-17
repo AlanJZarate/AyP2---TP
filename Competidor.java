@@ -47,7 +47,5 @@ public abstract class Competidor implements Comparable<Competidor> {
 
 	enum Caracteristica {
 		VELOCIDAD, FUERZA, RESISTENCIA, DESTREZA;
-
 	}
-
 }

@@ -35,5 +35,24 @@ public class Liga extends Competidor {
         }
         return totalCaracteristicas / competidoresDeLaLiga.size();
     }
+
+    /**
+     * Metodo overrideado con el fin de mostrar coherentemente la liga y por quienes esta compuesta
+     * @return
+     */
+    @Override
+    public String toString() {
+        String competidoresConcatenados = "";
+        for(Competidor c :competidoresDeLaLiga){
+            if(competidoresDeLaLiga.indexOf(c) < competidoresDeLaLiga.size()) // si el competidor no es el ultimo
+                                                                                // lo separo con coma
+                competidoresConcatenados += c + "\n";
+            else
+                competidoresConcatenados += c + ".";                           // si es el ultimo, punto final
+        }
+        return "Liga de " + (esHeroe() == true ? "heroes " : "villanos ") + this.getNombre() + " conformada por: \n" +
+                "==========================================================\n"
+                + competidoresConcatenados;
+    }
 }
 

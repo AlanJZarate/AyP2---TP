@@ -9,7 +9,7 @@ import java.util.List;
 
 public class LectorLiga {
     // la lista de competidores per viene del LectorCompetidor
-    public static List<Liga> leerLiga(String fileName, List<Competidor> competidoresDisponibles) throws PeleaAliadaException, BandoErroneoException {
+    public static List<Liga> obtenerLigasDesdeArchivo(String fileName, List<Competidor> competidoresDisponibles) throws PeleaAliadaException, BandoErroneoException {
         ArrayList<Liga> ligaResultado = new ArrayList<Liga>();
 
         try {

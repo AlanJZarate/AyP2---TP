@@ -10,7 +10,7 @@ import java.util.List;
 public class LectorCompetidor {
     //Para el lector de liga la idea es crear la liga con su nombre y tipo y despues pasarle los personajes de la lista de este main.
 
-    public static List<Competidor> leerCompetidor(String fileName) throws FileNotFoundException, NumberFormatException, BandoErroneoException {
+    public static List<Competidor> obtenerCompetidoresDesdeArchivo(String fileName) throws FileNotFoundException, NumberFormatException, BandoErroneoException {
         ArrayList<Competidor> competidoresResultado = new ArrayList<Competidor>();
         try {
             FileReader archivo = new FileReader(fileName);

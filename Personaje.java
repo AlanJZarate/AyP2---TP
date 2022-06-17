@@ -13,6 +13,8 @@ public class Personaje extends Competidor {
 		return nombreReal;
 	}
 
-
-	
+	@Override
+	public String toString() {
+		return "Nombre real: " + getNombreReal() + ", Nombre de superHeroe/Villano: " + super.getNombre() + ", Liga: " + (esHeroe() == true ? "Heroe." : "Villano.");
+	}
 }
