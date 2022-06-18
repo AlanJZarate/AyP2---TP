@@ -2,14 +2,16 @@ package Tp3;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class JuegoGUI {
 
-    static ArrayList<Personaje> personajesParaGuardarAArchivo = null; // aca van los personajes que luego se escribiran
-    // en el archivo
+    static ArrayList<Personaje> personajesParaGuardarAArchivo = new ArrayList<Personaje>(); // aca van los personajes que luego se escribiran
+                                                                                              // en el archivo
     static List<Competidor> competidoresDesdeArchivo = null; // lista que se va llenando de competidores que entran desde
                                                             // archivo. No puse ArrayList porque no queria tocar el tipo
                                                             //  de dato de la Liga
@@ -22,7 +24,7 @@ public class JuegoGUI {
      * @throws FileNotFoundException
      * @throws PeleaAliadaException
      */
-    public static void generarMenu() throws BandoErroneoException, FileNotFoundException, PeleaAliadaException {
+    public static void generarMenu() throws BandoErroneoException, IOException, PeleaAliadaException {
         Scanner sc = new Scanner(System.in);
         boolean salir = false; // flag para terminar ejecucion del juego
         System.out.println("Bienvenido/a a Luchardo(TM), por favor, indique su nombre:\n");
@@ -57,7 +59,7 @@ public class JuegoGUI {
      * @throws FileNotFoundException
      * @throws PeleaAliadaException
      */
-    private static void lanzarSubMenuAdministrarPersonajes() throws BandoErroneoException, FileNotFoundException, PeleaAliadaException {
+    private static void lanzarSubMenuAdministrarPersonajes() throws BandoErroneoException, IOException, PeleaAliadaException {
         Scanner sc = new Scanner(System.in);
 
         System.out.println("1. Carga de personajes desde archivo\n" +
@@ -85,6 +87,14 @@ public class JuegoGUI {
             case 4:
                 listarCompetidores(false);
                 break;
+            case 5:
+                String nombreDeArchivo = "";
+                System.out.println("Ingrese la ruta donde desea guardar el archivo:");
+                if((nombreDeArchivo = sc.nextLine()) == ""){
+                    nombreDeArchivo = String.format("D:\\archivo_" + System.currentTimeMillis() + ".in");
+                }
+                guardarAArchivo(personajesParaGuardarAArchivo, nombreDeArchivo);
+                break;
         }
     }
 
@@ -99,12 +109,14 @@ public class JuegoGUI {
 
         System.out.println("Ingrese la ruta del archivo ligas.in a leer con el siguiente formato: \"C:\\Usuarios\\" +
                 "UsuarioBross\\Documentos\\ligas.in o \"Archivos/ligas_changed.in para path relativo" );
-        while(pathValido(scanner.nextLine())) // ToDo ver como hacer para que no se llame en esta linea y en la siguiente
+        paths[0] = scanner.nextLine();
+        while(!pathValido(paths[0])) // mientras el path sea invalido, lo sigo pidiendo (y pathValido muestra un error)
             paths[0] = scanner.nextLine();
 
         System.out.println("Ingrese la ruta del archivo personajes.in a leer con el siguiente formato: " +
                 "\"C:\\Usuarios\\UsuarioBross\\Documentos\\personajes.in o \"Archivos/personajes_original.in para path relativo");
-        while(pathValido(scanner.nextLine())) // ToDo ver como hacer para que no se llame en esta linea y en la siguiente
+        paths[1] = scanner.nextLine();
+        while(!pathValido(paths[1])) // mientras el path sea invalido, lo sigo pidiendo (y pathValido muestra un error)
             paths[1] = scanner.nextLine();
 
         return paths;
@@ -112,6 +124,7 @@ public class JuegoGUI {
 
     /**
      * valida un path pasado como parametro si un 'File' fake creado en tiempo de ejecucion existe, sino, tira error
+     * via System.err.println
      *
      * @param path
      */
@@ -126,7 +139,6 @@ public class JuegoGUI {
     }
 
     private static void crearPersonajeParaGuardarAArchivo() {
-        personajesParaGuardarAArchivo = new ArrayList<Personaje>();
         Scanner sc = new Scanner(System.in);
 
         System.out.println("Ingrese el nombre real del personaje:");
@@ -176,6 +188,25 @@ public class JuegoGUI {
     }
 
     /**
+     * Guarda a un archivo elegido por el usuario (sino crea un archivo con un nombre del estilo "D:\archivo_1655509117824.in")
+     * Por ahora usa D:/ para guardar por default
+     * @param personajes Lista de personajes a usar para guardar a archivo
+     * @param filePath Ruta completa (por ej. "D:\personajes.out") que es la ruta + nombredefile a guardar
+     * @throws IOException
+     */
+    public static void guardarAArchivo(List<Personaje> personajes, String filePath) throws IOException {
+        FileWriter fw = new FileWriter(filePath);
+        for (Personaje p: personajes) {
+            fw.append(p.toStringParaArchivo()+"\n");
+        }
+        if(pathValido(filePath))
+            System.out.println(filePath + " guardado con exito!");
+        else
+            System.err.println("Error al guardar " + filePath);
+        fw.close();
+    }
+
+    /**
      * intento de limpiar la consola para que no se vea todo el historico, parece funcionar en algunos contextos
      */
     private static void limpiarConsola(){ // ToDo borrar si no se usa
@@ -183,7 +214,9 @@ public class JuegoGUI {
         System.out.flush();
     }
 
+    // region Dibujado de bordes. ToDo: ver si se queda o lo borramos
     // para despues:
+
 
     /**
      * Dibuja el relleno de una columna de un ancho dado (sin los bordes)
@@ -272,4 +305,5 @@ public class JuegoGUI {
         }
         System.out.println();
     }
+    //endregion
 }

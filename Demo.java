@@ -1,6 +1,7 @@
 package Tp3;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Demo {
     public static void main(String[] args) {
@@ -15,6 +16,8 @@ public class Demo {
         } catch (BandoErroneoException e) {
             throw new RuntimeException(e);
         } catch (PeleaAliadaException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

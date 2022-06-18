@@ -34,15 +34,12 @@ public abstract class Competidor implements Comparable<Competidor> {
 	public boolean esHeroe(){
 		return this.esSuperHeroe;
 	}
-	
-
+	public String getNombre() {
+		return nombre;
+	}
 	@Override
 	public int compareTo(Competidor competidor) {
 		return comparator.compare(this,competidor);
-	}
-
-	public String getNombre() {
-		return nombre;
 	}
 
 	enum Caracteristica {
