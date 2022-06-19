@@ -10,16 +10,17 @@ import java.util.Scanner;
 
 public class JuegoGUI {
 
-    static ArrayList<Personaje> personajesParaGuardarAArchivo = new ArrayList<Personaje>(); // aca van los personajes que luego se escribiran
-                                                                                              // en el archivo
-    static List<Competidor> competidoresDesdeArchivo = null; // lista que se va llenando de competidores que entran desde
-                                                            // archivo. No puse ArrayList porque no queria tocar el tipo
-                                                            //  de dato de la Liga
-    static List<Liga> ligaDesdeArchivo = null; // lista que se llena con las ligas que vienen en el archivo, para
-                                               // poder imprimirse por separado. ToDo Ver si es util
+    private static ArrayList<Competidor> competidoresParaGuardarAArchivo = new ArrayList<Competidor>(); // aca van los personajes que luego se escribiran
+    // en el archivo
+    private static List<Competidor> competidoresLeidosDesdeArchivo = null; // lista que se va llenando de competidores que entran desde
+    // archivo. No puse ArrayList porque no queria tocar el tipo de dato de la Liga
+
+    private static List<Competidor> todosLosCompetidores = new ArrayList<Competidor>();
+    // Lista que contiene todos los competidores, tanto los ingresados por archivo como manualmente
 
     /**
      * Genera el menu en consola. Contiene opciones que se utilizan interactivamente en tiempo real.
+     *
      * @throws BandoErroneoException
      * @throws FileNotFoundException
      * @throws PeleaAliadaException
@@ -42,7 +43,10 @@ public class JuegoGUI {
 
             switch (opcion) {
                 case 1:
-                    lanzarSubMenuAdministrarPersonajes();
+                    lanzarSubMenuAdministrarCompetidores(false);
+                    break;
+                case 2:
+                    lanzarSubMenuAdministrarCompetidores(true);
                     break;
                 case 9:
                     salir = true;
@@ -55,45 +59,69 @@ public class JuegoGUI {
 
     /**
      * Se lanza cuando la opcion "Administrar personajes" fue elegida. Trata a las Ligas como Competidores.
+     *
      * @throws BandoErroneoException
      * @throws FileNotFoundException
      * @throws PeleaAliadaException
      */
-    private static void lanzarSubMenuAdministrarPersonajes() throws BandoErroneoException, IOException, PeleaAliadaException {
+    private static void lanzarSubMenuAdministrarCompetidores(boolean esLiga) throws BandoErroneoException, IOException, PeleaAliadaException {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("1. Carga de personajes desde archivo\n" +
-                "2. Crear personaje manualmente\n" +
-                "3. Listar competidores cargados desde archivo\n" +
-                "4. Listar competidores creados aqui\n" +
-                "5. Guardar personajes creados a un archivo\n"); // ToDo falta implementar guardado
-
+        System.out.println("1. Carga de " + (esLiga ? "Liga " : "Personaje ") + "desde archivo\n" +
+                "2. Crear " + (esLiga ? "Liga " : "Personaje ") + "manualmente\n" +
+                "3. Listar " + (esLiga ? "Ligas " : "Personajes ") + "\n" +
+                "4. Guardar " + (esLiga ? "Liga " : "Personaje") + "s " + " creados a un archivo\n" +
+                (esLiga && competidoresLeidosDesdeArchivo != null ? "5. Agregar Personaje a liga existente" : ""));
 
         switch (Integer.parseInt(sc.nextLine())) {
-            case 1:
-                String[] paths = obtenerRutaDeArchivos();
-                competidoresDesdeArchivo = LectorCompetidor.obtenerCompetidoresDesdeArchivo(paths[1]);
-                ligaDesdeArchivo = LectorLiga.obtenerLigasDesdeArchivo(paths[0], competidoresDesdeArchivo);
+
+            case 1: // 1. Carga de Personaje/Liga desde archivo
+                String path = obtenerRutaDeArchivo(esLiga);
+                if (esLiga) {
+                    if (competidoresLeidosDesdeArchivo != null) {
+                        competidoresLeidosDesdeArchivo.addAll(LectorLiga.obtenerLigasDesdeArchivo(path, competidoresLeidosDesdeArchivo));
+                    } else
+                        System.err.println("No hay Personajes creados para crear una Liga, primero debe crear uno.");
+                } else {
+                    competidoresLeidosDesdeArchivo = LectorCompetidor.obtenerCompetidoresDesdeArchivo(path);
+                    todosLosCompetidores.addAll(competidoresLeidosDesdeArchivo);
+                }
+
                 break;
 
-            case 2:
-                crearPersonajeParaGuardarAArchivo();
-                break;
+            case 2: // 2. Crear Personaje/Liga manualmente
+                if (esLiga)
+                    if (competidoresLeidosDesdeArchivo != null)
+                        crearCompetidorParaGuardarAArchivo(true); // crea una Liga
+                    else
+                        System.err.println("No hay Personajes creados para crear una Liga, primero debe crear uno.");
+                else
+                    crearCompetidorParaGuardarAArchivo(false); // crea un Personaje
 
+                break;
             case 3:
-                listarCompetidores(true);
+                listarCompetidores();
                 break;
-
             case 4:
-                listarCompetidores(false);
-                break;
-            case 5:
                 String nombreDeArchivo = "";
                 System.out.println("Ingrese la ruta donde desea guardar el archivo:");
-                if((nombreDeArchivo = sc.nextLine()) == ""){
+                if ((nombreDeArchivo = sc.nextLine()) == "") {
                     nombreDeArchivo = String.format("D:\\archivo_" + System.currentTimeMillis() + ".in");
                 }
-                guardarAArchivo(personajesParaGuardarAArchivo, nombreDeArchivo);
+                guardarAArchivo(competidoresParaGuardarAArchivo, nombreDeArchivo);
+                break;
+            case 5:
+                System.out.println("Ingrese el ID de la Liga, de los siguientes Competidores listados: ");
+                listarCompetidores();
+
+                int idPersonaje = Integer.parseInt(sc.nextLine());
+
+                Competidor liga = null;
+
+                while (obtenerCompetidor(idPersonaje).getClass() == Liga.class)
+                    System.err.println("El id seleccionado no corresponde a una Liga. Seleccione el ID correcto.");
+
+                liga = obtenerCompetidor(idPersonaje);
                 break;
         }
     }
@@ -101,25 +129,25 @@ public class JuegoGUI {
     /**
      * @return el path ingresado por teclado
      */
-    public static String[] obtenerRutaDeArchivos() {
+    public static String obtenerRutaDeArchivo(boolean esLiga) {
         Scanner scanner = new Scanner(System.in);
 
-        String[] paths = new String[2]; // Array de 2 posiciones para almacenar el path de ligas.in en [0] y
-                                        // el path de personajes.in en [1]
+        String pathResultado = "";
 
-        System.out.println("Ingrese la ruta del archivo ligas.in a leer con el siguiente formato: \"C:\\Usuarios\\" +
-                "UsuarioBross\\Documentos\\ligas.in o \"Archivos/ligas_changed.in para path relativo" );
-        paths[0] = scanner.nextLine();
-        while(!pathValido(paths[0])) // mientras el path sea invalido, lo sigo pidiendo (y pathValido muestra un error)
-            paths[0] = scanner.nextLine();
-
-        System.out.println("Ingrese la ruta del archivo personajes.in a leer con el siguiente formato: " +
-                "\"C:\\Usuarios\\UsuarioBross\\Documentos\\personajes.in o \"Archivos/personajes_original.in para path relativo");
-        paths[1] = scanner.nextLine();
-        while(!pathValido(paths[1])) // mientras el path sea invalido, lo sigo pidiendo (y pathValido muestra un error)
-            paths[1] = scanner.nextLine();
-
-        return paths;
+        if (!esLiga) { // ruta para un Personaje
+            System.out.println("Ingrese la ruta del archivo personajes.in a leer con el siguiente formato: " +
+                    "\"C:\\Usuarios\\UsuarioBross\\Documentos\\personajes.in o \"Archivos/personajes_original.in para path relativo");
+            pathResultado = scanner.nextLine();
+            while (!pathValido(pathResultado)) // mientras el path sea invalido, lo sigo pidiendo (y pathValido muestra un error)
+                pathResultado = scanner.nextLine();
+        } else { // ruta para una Liga
+            System.out.println("Ingrese la ruta del archivo ligas.in a leer con el siguiente formato: \"C:\\Usuarios\\" +
+                    "UsuarioBross\\Documentos\\ligas.in o \"Archivos/ligas_changed.in para path relativo");
+            pathResultado = scanner.nextLine();
+            while (!pathValido(pathResultado)) // mientras el path sea invalido, lo sigo pidiendo (y pathValido muestra un error)
+                pathResultado = scanner.nextLine();
+        }
+        return pathResultado;
     }
 
     /**
@@ -138,68 +166,94 @@ public class JuegoGUI {
         return resultado;
     }
 
-    private static void crearPersonajeParaGuardarAArchivo() {
+    private static void crearCompetidorParaGuardarAArchivo(boolean esLiga) {
         Scanner sc = new Scanner(System.in);
+        Competidor nuevo = null;
+        // una liga necesita un nombre y personajes que la contienen
+        // un personaje necesita nombreReal, nombreHeroeVilllano, Caracteristicas
 
-        System.out.println("Ingrese el nombre real del personaje:");
+        System.out.println("Ingrese " + (esLiga ? "el nombre de la Liga" : " nombre real del personaje:"));
         String nombreReal = sc.nextLine();
 
-        System.out.println("Ingrese el nombre de Heroe/Villano del personaje:");
-        String nombreCompetidor = sc.nextLine(); // para no ponerle "nombreDeSuperHeroeOVillano"
+        String nombreCompetidor = null; // para no ponerle "nombreDeSuperHeroeOVillano"
+        Character bando = null; // medio flojo porque si ponen otra cosa se rompe
+        int velocidad = 0;
+        int fuerza = 0;
+        int resistencia = 0;
+        int destreza = 0;
 
-        System.out.println("Ingrese el bando del personaje: ('h' para heroe, 'v' para villano):");
-        Character bando = sc.nextLine().charAt(0); // medio flojo porque si ponen otra cosa se rompe
+        if (!esLiga) {
+            System.out.println("Ingrese el nombre de Heroe/Villano del personaje:");
+            nombreCompetidor = sc.nextLine();
 
-        System.out.println("Ingrese el valor de VELOCIDAD del personaje:");
-        int velocidad = Integer.parseInt(sc.nextLine());
+            System.out.println("Ingrese el bando del personaje: ('h' para heroe, 'v' para villano):");
+            bando = sc.nextLine().charAt(0);
 
-        System.out.println("Ingrese el valor de FUERZA del personaje:");
-        int fuerza = Integer.parseInt(sc.nextLine());
+            System.out.println("Ingrese el valor de VELOCIDAD del personaje:");
+            velocidad = Integer.parseInt(sc.nextLine());
 
-        System.out.println("Ingrese el valor de RESISTENCIA del personaje:");
-        int resistencia = Integer.parseInt(sc.nextLine());
+            System.out.println("Ingrese el valor de FUERZA del personaje:");
+            fuerza = Integer.parseInt(sc.nextLine());
 
-        System.out.println("Ingrese el valor de DESTREZA del personaje:");
-        int destreza = Integer.parseInt(sc.nextLine());
+            System.out.println("Ingrese el valor de RESISTENCIA del personaje:");
+            resistencia = Integer.parseInt(sc.nextLine());
 
-        personajesParaGuardarAArchivo.add(new Personaje(nombreReal, nombreCompetidor, bando == 'h' ? true : false, velocidad, fuerza, resistencia, destreza));
+            System.out.println("Ingrese el valor de DESTREZA del personaje:");
+            destreza = Integer.parseInt(sc.nextLine());
+
+            nuevo = new Personaje(nombreReal, nombreCompetidor, bando == 'h' ? true : false, velocidad, fuerza, resistencia, destreza);
+        } else {
+            System.out.println("Ingrese el ID del personaje de los siguientes Personajes listados: ");
+            listarCompetidores();
+            int idPersonaje = Integer.parseInt(sc.nextLine());
+            nuevo = obtenerCompetidor(idPersonaje);
+        }
+        competidoresParaGuardarAArchivo.add(nuevo);
+        todosLosCompetidores.add(nuevo);
+    }
+
+    /**
+     * Sirve para obtener un competidor de la lista competidoresDesdeArchivo dado un idCompetidor
+     *
+     * @param idCompetidor competidor que se necesita obtener
+     * @return
+     */
+    private static Competidor obtenerCompetidor(int idCompetidor) { // 2 competidores
+        if (idCompetidor >= 0 && idCompetidor < todosLosCompetidores.size()) {
+            return todosLosCompetidores.get(idCompetidor);
+        }
+        return null;
     }
 
     /**
      * Lista todos los competidores que se hayan tenido en cuenta al crearse/importarse
      * - Nota: toma las ligas como Competidores que son. ToDo ver como hacer para separar Ligas de Personajes
-     * @param importadosDesdeArchivo Boolean para diferenciar si vamos a listar los creados en tiempo de ejecucion o
-     *                               los importados desde archivo
      */
-    public static void listarCompetidores(boolean importadosDesdeArchivo) {
-        if (importadosDesdeArchivo && competidoresDesdeArchivo != null) {
-            for (Competidor c : competidoresDesdeArchivo) {
-                System.out.println("Personaje " + competidoresDesdeArchivo.indexOf(c) + ": " + c.toString()); // index of para mostrar el numero de personaje
+    public static void listarCompetidores() {
+        if (todosLosCompetidores != null) {
+            for (Competidor c : todosLosCompetidores) {
+                System.out.println("Competidor " + todosLosCompetidores.indexOf(c) + ": " + c.toString());
+                // index of para mostrar el numero de personaje
             }
-        }
-        else if (!importadosDesdeArchivo && personajesParaGuardarAArchivo != null) {
-            for (Competidor p : personajesParaGuardarAArchivo) {
-                System.out.println("Personaje " + personajesParaGuardarAArchivo.indexOf(p) + ": " + p.toString()); // index of para mostrar el numero de personaje
-            }
-        }
-        else {
-            System.err.println("No hay personajes que mostrar");
+        } else {
+            System.err.println("No hay competidores que mostrar");
         }
     }
 
     /**
      * Guarda a un archivo elegido por el usuario (sino crea un archivo con un nombre del estilo "D:\archivo_1655509117824.in")
      * Por ahora usa D:/ para guardar por default
-     * @param personajes Lista de personajes a usar para guardar a archivo
-     * @param filePath Ruta completa (por ej. "D:\personajes.out") que es la ruta + nombredefile a guardar
+     *
+     * @param competidores Lista de personajes a usar para guardar a archivo
+     * @param filePath     Ruta completa (por ej. "D:\personajes.out") que es la ruta + nombredefile a guardar
      * @throws IOException
      */
-    public static void guardarAArchivo(List<Personaje> personajes, String filePath) throws IOException {
+    public static void guardarAArchivo(List<Competidor> competidores, String filePath) throws IOException {
         FileWriter fw = new FileWriter(filePath);
-        for (Personaje p: personajes) {
-            fw.append(p.toStringParaArchivo()+"\n");
+        for (Competidor c : competidores) {
+            fw.append(((Personaje) c).toStringParaArchivo() + "\n");
         }
-        if(pathValido(filePath))
+        if (pathValido(filePath))
             System.out.println(filePath + " guardado con exito!");
         else
             System.err.println("Error al guardar " + filePath);
@@ -209,7 +263,7 @@ public class JuegoGUI {
     /**
      * intento de limpiar la consola para que no se vea todo el historico, parece funcionar en algunos contextos
      */
-    private static void limpiarConsola(){ // ToDo borrar si no se usa
+    private static void limpiarConsola() { // ToDo borrar si no se usa
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
